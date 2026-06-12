@@ -203,11 +203,25 @@ Human Resource Information System
 
 </div>
 
-<div>
+<div style="text-align:right">
 
 <b>Admin</b><br>
 
 <span id="today"></span>
+
+<br><br>
+
+<button onclick="logout()"
+style="
+padding:8px 15px;
+border:none;
+border-radius:8px;
+background:#dc3545;
+color:white;
+cursor:pointer;
+">
+Logout
+</button>
 
 </div>
 
@@ -583,8 +597,25 @@ new Chart(
 );
 
 }
+function logout(){
 
+    localStorage.clear();
+
+    window.location.href =
+    'index.html';
+
+}
 </script>
+const username =
+localStorage.getItem(
+    'username'
+);
 
+if(!username){
+
+    window.location.href =
+    'index.html';
+
+}
 </body>
 </html>
