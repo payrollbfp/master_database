@@ -1,373 +1,548 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Dashboard HRIS</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Segoe UI,sans-serif;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI,sans-serif;
 }
 
 body{
-    background:#f4f6f9;
+background:#f4f6f9;
 }
 
 .header{
-    background:#1d2d5c;
-    color:white;
-    padding:20px 30px;
 
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
+background:#1d2d5c;
+color:white;
 
-.header h2{
-    font-size:24px;
-}
+padding:20px 30px;
 
-.user-info{
-    text-align:right;
+display:flex;
+justify-content:space-between;
+align-items:center;
+
 }
 
 .container{
-    padding:25px;
+padding:20px;
 }
 
 .card{
-    background:white;
-    border-radius:15px;
-    padding:20px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+
+background:white;
+border-radius:15px;
+
+padding:20px;
+
+margin-bottom:20px;
+
+box-shadow:
+0 2px 8px rgba(0,0,0,.08);
+
 }
 
-.chart-card{
-    height:450px;
-}
+.summary{
 
-.summary-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
+display:grid;
+grid-template-columns:
+repeat(4,1fr);
+
+gap:15px;
+
+margin-bottom:20px;
+
 }
 
 .summary-box{
-    background:white;
-    border-radius:15px;
-    padding:20px;
-    text-align:center;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+
+background:white;
+
+padding:20px;
+
+border-radius:15px;
+
+text-align:center;
+
+box-shadow:
+0 2px 8px rgba(0,0,0,.08);
+
 }
 
 .summary-box h3{
-    color:#666;
-    margin-bottom:10px;
+color:#666;
+margin-bottom:10px;
 }
 
 .summary-box h1{
-    color:#1d2d5c;
+color:#1d2d5c;
 }
 
-.table-container{
-    overflow-x:auto;
+.chart-box{
+height:450px;
 }
 
 table{
-    width:100%;
-    border-collapse:collapse;
+
+width:100%;
+border-collapse:collapse;
+
 }
 
 th{
-    background:#1d2d5c;
-    color:white;
-    padding:12px;
+
+background:#1d2d5c;
+color:white;
+
+padding:12px;
+
 }
 
 td{
-    padding:12px;
-    border-bottom:1px solid #eee;
+
+padding:12px;
+border-bottom:1px solid #eee;
+
 }
 
-.expired{
-    color:red;
-    font-weight:bold;
+.menu{
+
+display:grid;
+
+grid-template-columns:
+repeat(4,1fr);
+
+gap:15px;
+
 }
 
-.warning{
-    color:orange;
-    font-weight:bold;
+.menu button{
+
+height:70px;
+
+border:none;
+
+border-radius:15px;
+
+background:white;
+
+font-weight:bold;
+
+color:#1d2d5c;
+
+cursor:pointer;
+
+box-shadow:
+0 2px 8px rgba(0,0,0,.08);
+
 }
 
-.safe{
-    color:green;
-    font-weight:bold;
+.menu button:hover{
+
+background:#1d2d5c;
+color:white;
+
 }
 
-.menu-grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
+.red{
+color:red;
+font-weight:bold;
 }
 
-.menu-btn{
-    background:white;
-    border:none;
-    border-radius:15px;
-    padding:25px;
-    cursor:pointer;
-    font-weight:bold;
-    color:#1d2d5c;
-    font-size:15px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-    transition:0.3s;
+.orange{
+color:orange;
+font-weight:bold;
 }
 
-.menu-btn:hover{
-    background:#1d2d5c;
-    color:white;
+.green{
+color:green;
+font-weight:bold;
 }
 
 @media(max-width:900px){
 
-    .summary-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
+.summary{
+grid-template-columns:1fr 1fr;
+}
 
-    .menu-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
+.menu{
+grid-template-columns:1fr 1fr;
+}
 
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="header">
 
-    <div>
-        <h2>PT BINTANG FAJAR PERSADA</h2>
-        <p>Human Resource Information System</p>
-    </div>
+<div>
 
-    <div class="user-info">
-        <strong>Admin</strong><br>
-        <span id="today"></span>
-    </div>
+<h2>
+PT BINTANG FAJAR PERSADA
+</h2>
+
+<p>
+Human Resource Information System
+</p>
+
+</div>
+
+<div>
+
+<b>Admin</b><br>
+
+<span id="today"></span>
+
+</div>
 
 </div>
 
 <div class="container">
 
-    <!-- GRAFIK -->
+<div class="summary">
 
-    <div class="card chart-card">
+<div class="summary-box">
 
-        <h3>Headcount Aktif 12 Bulan Terakhir</h3>
+<h3>Karyawan Aktif</h3>
 
-        <canvas id="headcountChart"></canvas>
+<h1 id="aktif">
+0
+</h1>
 
-    </div>
+</div>
 
-    <!-- KPI -->
+<div class="summary-box">
 
-    <div class="summary-grid">
+<h3>PKWT ≤ 60 Hari</h3>
 
-        <div class="summary-box">
-            <h3>Karyawan Aktif</h3>
-            <h1 id="aktif">489</h1>
-        </div>
+<h1 id="pkwt">
+0
+</h1>
 
-        <div class="summary-box">
-            <h3>PKWT Expired</h3>
-            <h1 id="pkwt">12</h1>
-        </div>
+</div>
 
-        <div class="summary-box">
-            <h3>MCU Expired</h3>
-            <h1 id="mcu">8</h1>
-        </div>
+<div class="summary-box">
 
-        <div class="summary-box">
-            <h3>Resign</h3>
-            <h1 id="resign">23</h1>
-        </div>
+<h3>MCU ≤ 60 Hari</h3>
 
-    </div>
+<h1 id="mcu">
+0
+</h1>
 
-    <br>
+</div>
 
-    <!-- PKWT -->
+<div class="summary-box">
 
-    <div class="card">
+<h3>Resign</h3>
 
-        <h3 style="margin-bottom:15px;">
-            Monitoring PKWT Akan Berakhir
-        </h3>
+<h1 id="resign">
+0
+</h1>
 
-        <div class="table-container">
+</div>
 
-            <table>
+</div>
 
-                <thead>
+<div class="card chart-box">
 
-                <tr>
-                    <th>Project</th>
-                    <th>Nopeg</th>
-                    <th>Nama</th>
-                    <th>Jabatan</th>
-                    <th>PKWT Kadaluarsa</th>
-                    <th>Sisa Hari</th>
-                </tr>
+<h3>
+Headcount Aktif per Project
+</h3>
 
-                </thead>
+<br>
 
-                <tbody>
+<canvas id="projectChart"></canvas>
 
-                <tr>
-                    <td>HO-WMS</td>
-                    <td>EMP001</td>
-                    <td>Budi</td>
-                    <td>Payroll Staff</td>
-                    <td>30-Jun-2026</td>
-                    <td class="expired">15 Hari</td>
-                </tr>
+</div>
 
-                <tr>
-                    <td>DSP Sumut</td>
-                    <td>EMP002</td>
-                    <td>Andi</td>
-                    <td>Supervisor</td>
-                    <td>15-Aug-2026</td>
-                    <td class="warning">45 Hari</td>
-                </tr>
+<div class="card">
 
-                </tbody>
+<h3>
+PKWT Akan Berakhir
+</h3>
 
-            </table>
+<br>
 
-        </div>
+<table>
 
-    </div>
+<thead>
 
-    <!-- MENU -->
+<tr>
 
-    <div class="card">
+<th>Project</th>
+<th>Nopeg</th>
+<th>Nama</th>
+<th>Jabatan</th>
+<th>PKWT Kadaluarsa</th>
+<th>Sisa Hari</th>
 
-        <h3 style="margin-bottom:20px;">
-            Report Menu
-        </h3>
+</tr>
 
-        <div class="menu-grid">
+</thead>
 
-            <button class="menu-btn"
-            onclick="location.href='master_reguler.html'">
-                MASTER REGULER
-            </button>
+<tbody id="tblPKWT">
 
-            <button class="menu-btn"
-            onclick="location.href='master_bpjs.html'">
-                MASTER BPJS
-            </button>
+</tbody>
 
-            <button class="menu-btn"
-            onclick="location.href='master_pkwt.html'">
-                MASTER PKWT
-            </button>
+</table>
 
-            <button class="menu-btn"
-            onclick="location.href='master_mcu.html'">
-                MASTER MCU
-            </button>
+</div>
 
-            <button class="menu-btn"
-            onclick="location.href='master_training.html'">
-                MASTER TRAINING
-            </button>
+<div class="card">
 
-            <button class="menu-btn"
-            onclick="location.href='master_turnover.html'">
-                TURN OVER KARYAWAN
-            </button>
+<h3>
+Menu Report
+</h3>
 
-            <button class="menu-btn"
-            onclick="location.href='master_pajak.html'">
-                MASTER DATA PAJAK
-            </button>
+<br>
 
-        </div>
+<div class="menu">
 
-    </div>
+<button onclick="location.href='master_reguler.html'">
+MASTER REGULER
+</button>
+
+<button onclick="location.href='master_bpjs.html'">
+MASTER BPJS
+</button>
+
+<button onclick="location.href='master_pkwt.html'">
+MASTER PKWT
+</button>
+
+<button onclick="location.href='master_mcu.html'">
+MASTER MCU
+</button>
+
+<button onclick="location.href='master_training.html'">
+MASTER TRAINING
+</button>
+
+<button onclick="location.href='master_turnover.html'">
+TURN OVER KARYAWAN
+</button>
+
+<button onclick="location.href='master_pajak.html'">
+MASTER DATA PAJAK
+</button>
+
+</div>
+
+</div>
 
 </div>
 
 <script>
 
-document.getElementById("today")
+document.getElementById('today')
 .innerHTML =
-new Date().toLocaleDateString("id-ID");
+new Date().toLocaleDateString('id-ID');
 
-const ctx =
-document.getElementById("headcountChart");
+const SUPABASE_URL =
+'https://dvhjaxqpoqpeyamtlvgh.supabase.co';
 
-new Chart(ctx,{
+const SUPABASE_KEY =
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aGpheHFwb3FwZXlhbXRsdmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzU1MjAsImV4cCI6MjA5MzcxMTUyMH0.qwX2LZ-9A1ZoLaqkRnZcDValUNKCYoqMvA_Vs79NkWY';
 
-    type:"line",
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
-    data:{
+loadDashboard();
 
-        labels:[
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun"
-        ],
+async function loadDashboard(){
 
-        datasets:[{
+const { data , error } =
+await supabaseClient
+.from('master_karyawan')
+.select('*');
 
-            label:"Karyawan Aktif",
+if(error){
 
-            data:[
-                420,
-                425,
-                430,
-                435,
-                438,
-                445,
-                452,
-                460,
-                467,
-                475,
-                482,
-                489
-            ],
+console.log(error);
+return;
 
-            tension:0.4
+}
 
-        }]
+const today =
+new Date();
 
-    }
+let aktif = 0;
+let resign = 0;
+let pkwt = 0;
+let mcu = 0;
+
+let projectCount = {};
+
+let html = '';
+
+data.forEach(row=>{
+
+if(
+row.status_karyawan &&
+row.status_karyawan.toUpperCase() === 'AKTIF'
+){
+
+aktif++;
+
+if(!projectCount[row.project]){
+
+projectCount[row.project]=0;
+
+}
+
+projectCount[row.project]++;
+
+}
+
+if(row.tanggal_resign){
+
+resign++;
+
+}
+
+if(row.pkwt_kadaluarsa){
+
+const exp =
+new Date(row.pkwt_kadaluarsa);
+
+const diff =
+Math.ceil(
+(exp - today)
+/(1000*60*60*24)
+);
+
+if(diff <= 60){
+
+pkwt++;
+
+let warna='green';
+
+if(diff<=30){
+
+warna='red';
+
+}else if(diff<=60){
+
+warna='orange';
+
+}
+
+html += `
+<tr>
+
+<td>${row.project||''}</td>
+<td>${row.nopeg||''}</td>
+<td>${row.nama||''}</td>
+<td>${row.jabatan||''}</td>
+<td>${row.pkwt_kadaluarsa}</td>
+<td class="${warna}">
+${diff} Hari
+</td>
+
+</tr>
+`;
+
+}
+
+}
+
+if(row.mcu_kadaluarsa){
+
+const exp =
+new Date(row.mcu_kadaluarsa);
+
+const diff =
+Math.ceil(
+(exp - today)
+/(1000*60*60*24)
+);
+
+if(diff <= 60){
+
+mcu++;
+
+}
+
+}
 
 });
+
+document
+.getElementById('aktif')
+.innerHTML = aktif;
+
+document
+.getElementById('resign')
+.innerHTML = resign;
+
+document
+.getElementById('pkwt')
+.innerHTML = pkwt;
+
+document
+.getElementById('mcu')
+.innerHTML = mcu;
+
+document
+.getElementById('tblPKWT')
+.innerHTML = html;
+
+const labels =
+Object.keys(projectCount);
+
+const values =
+Object.values(projectCount);
+
+new Chart(
+
+document.getElementById(
+'projectChart'
+),
+
+{
+
+type:'bar',
+
+data:{
+
+labels:labels,
+
+datasets:[{
+
+label:
+'Karyawan Aktif',
+
+data:values
+
+}]
+
+}
+
+}
+
+);
+
+}
 
 </script>
 
