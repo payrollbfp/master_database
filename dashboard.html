@@ -535,38 +535,51 @@ document
 .getElementById('tblPKWT')
 .innerHTML = html;
 
-const labels =
-Object.keys(projectCount);
-
-const values =
-Object.values(projectCount);
+const labels = Object.keys(projectCount);
+const values = Object.values(projectCount);
 
 new Chart(
+    document.getElementById('projectChart'),
+    {
+        type: 'bar',
 
-document.getElementById(
-'projectChart'
-),
+        data: {
+            labels: labels,
 
-{
+            datasets: [{
+                label: 'Karyawan Aktif',
+                data: values,
+                borderWidth: 1
+            }]
+        },
 
-type:'bar',
+        options: {
 
-options:{
+            indexAxis: 'y',
 
-indexAxis:'y',
+            responsive: true,
 
-responsive:true,
+            maintainAspectRatio: false,
 
-plugins:{
+            plugins: {
 
-legend:{
-display:false
-}
+                legend: {
+                    display: false
+                }
 
-}
+            },
 
-}
+            scales: {
 
+                x: {
+                    beginAtZero: true
+                }
+
+            }
+
+        }
+
+    }
 );
 
 }
