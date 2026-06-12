@@ -17,7 +17,7 @@
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:Segoe UI,sans-serif;
+font-family:Georgia,sans-serif;
 }
 
 body{
@@ -70,15 +70,14 @@ margin-bottom:20px;
 .summary-box{
 
 background:white;
+border-left:5px solid #1d2d5c;
 
-padding:20px;
+padding:25px;
 
 border-radius:15px;
 
-text-align:center;
-
 box-shadow:
-0 2px 8px rgba(0,0,0,.08);
+0 5px 15px rgba(0,0,0,.08);
 
 }
 
@@ -441,7 +440,11 @@ resign++;
 
 }
 
-if(row.pkwt_kadaluarsa){
+if(
+    row.status_karyawan &&
+    row.status_karyawan.trim().toUpperCase() === 'AKTIF' &&
+    row.pkwt_kadaluarsa
+){
 
 const exp =
 new Date(row.pkwt_kadaluarsa);
@@ -487,7 +490,11 @@ ${diff} Hari
 
 }
 
-if(row.mcu_kadaluarsa){
+if(
+    row.status_karyawan &&
+    row.status_karyawan.trim().toUpperCase() === 'AKTIF' &&
+    row.mcu_kadaluarsa
+){
 
 const exp =
 new Date(row.mcu_kadaluarsa);
@@ -544,18 +551,17 @@ document.getElementById(
 
 type:'bar',
 
-data:{
+options:{
 
-labels:labels,
+indexAxis:'y',
 
-datasets:[{
+responsive:true,
 
-label:
-'Karyawan Aktif',
+plugins:{
 
-data:values
-
-}]
+legend:{
+display:false
+}
 
 }
 
