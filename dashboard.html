@@ -376,10 +376,11 @@ await supabaseClient
 .from('master_karyawan')
 .select('*');
 
-if(error){
+console.log("ERROR :", error);
 
-console.log(error);
-return;
+console.log("TOTAL DATA :", data?.length);
+
+console.log("DATA PERTAMA :", data?.[0]);
 
 }
 
