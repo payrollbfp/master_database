@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard HRIS</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Segoe UI,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+}
+
+.header{
+    background:#1d2d5c;
+    color:white;
+    padding:20px 30px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.header h2{
+    font-size:24px;
+}
+
+.user-info{
+    text-align:right;
+}
+
+.container{
+    padding:25px;
+}
+
+.card{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.chart-card{
+    height:450px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.summary-box{
+    background:white;
+    border-radius:15px;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.summary-box h3{
+    color:#666;
+    margin-bottom:10px;
+}
+
+.summary-box h1{
+    color:#1d2d5c;
+}
+
+.table-container{
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#1d2d5c;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+}
+
+.expired{
+    color:red;
+    font-weight:bold;
+}
+
+.warning{
+    color:orange;
+    font-weight:bold;
+}
+
+.safe{
+    color:green;
+    font-weight:bold;
+}
+
+.menu-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.menu-btn{
+    background:white;
+    border:none;
+    border-radius:15px;
+    padding:25px;
+    cursor:pointer;
+    font-weight:bold;
+    color:#1d2d5c;
+    font-size:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.menu-btn:hover{
+    background:#1d2d5c;
+    color:white;
+}
+
+@media(max-width:900px){
+
+    .summary-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .menu-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <div>
+        <h2>PT BINTANG FAJAR PERSADA</h2>
+        <p>Human Resource Information System</p>
+    </div>
+
+    <div class="user-info">
+        <strong>Admin</strong><br>
+        <span id="today"></span>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <!-- GRAFIK -->
+
+    <div class="card chart-card">
+
+        <h3>Headcount Aktif 12 Bulan Terakhir</h3>
+
+        <canvas id="headcountChart"></canvas>
+
+    </div>
+
+    <!-- KPI -->
+
+    <div class="summary-grid">
+
+        <div class="summary-box">
+            <h3>Karyawan Aktif</h3>
+            <h1 id="aktif">489</h1>
+        </div>
+
+        <div class="summary-box">
+            <h3>PKWT Expired</h3>
+            <h1 id="pkwt">12</h1>
+        </div>
+
+        <div class="summary-box">
+            <h3>MCU Expired</h3>
+            <h1 id="mcu">8</h1>
+        </div>
+
+        <div class="summary-box">
+            <h3>Resign</h3>
+            <h1 id="resign">23</h1>
+        </div>
+
+    </div>
+
+    <br>
+
+    <!-- PKWT -->
+
+    <div class="card">
+
+        <h3 style="margin-bottom:15px;">
+            Monitoring PKWT Akan Berakhir
+        </h3>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Project</th>
+                    <th>Nopeg</th>
+                    <th>Nama</th>
+                    <th>Jabatan</th>
+                    <th>PKWT Kadaluarsa</th>
+                    <th>Sisa Hari</th>
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                <tr>
+                    <td>HO-WMS</td>
+                    <td>EMP001</td>
+                    <td>Budi</td>
+                    <td>Payroll Staff</td>
+                    <td>30-Jun-2026</td>
+                    <td class="expired">15 Hari</td>
+                </tr>
+
+                <tr>
+                    <td>DSP Sumut</td>
+                    <td>EMP002</td>
+                    <td>Andi</td>
+                    <td>Supervisor</td>
+                    <td>15-Aug-2026</td>
+                    <td class="warning">45 Hari</td>
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- MENU -->
+
+    <div class="card">
+
+        <h3 style="margin-bottom:20px;">
+            Report Menu
+        </h3>
+
+        <div class="menu-grid">
+
+            <button class="menu-btn"
+            onclick="location.href='master_reguler.html'">
+                MASTER REGULER
+            </button>
+
+            <button class="menu-btn"
+            onclick="location.href='master_bpjs.html'">
+                MASTER BPJS
+            </button>
+
+            <button class="menu-btn"
+            onclick="location.href='master_pkwt.html'">
+                MASTER PKWT
+            </button>
+
+            <button class="menu-btn"
+            onclick="location.href='master_mcu.html'">
+                MASTER MCU
+            </button>
+
+            <button class="menu-btn"
+            onclick="location.href='master_training.html'">
+                MASTER TRAINING
+            </button>
+
+            <button class="menu-btn"
+            onclick="location.href='master_turnover.html'">
+                TURN OVER KARYAWAN
+            </button>
+
+            <button class="menu-btn"
+            onclick="location.href='master_pajak.html'">
+                MASTER DATA PAJAK
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+document.getElementById("today")
+.innerHTML =
+new Date().toLocaleDateString("id-ID");
+
+const ctx =
+document.getElementById("headcountChart");
+
+new Chart(ctx,{
+
+    type:"line",
+
+    data:{
+
+        labels:[
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun"
+        ],
+
+        datasets:[{
+
+            label:"Karyawan Aktif",
+
+            data:[
+                420,
+                425,
+                430,
+                435,
+                438,
+                445,
+                452,
+                460,
+                467,
+                475,
+                482,
+                489
+            ],
+
+            tension:0.4
+
+        }]
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>
