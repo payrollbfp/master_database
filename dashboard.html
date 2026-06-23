@@ -551,47 +551,99 @@ document
 
 const labels = Object.keys(projectCount);
 const values = Object.values(projectCount);
+const sorted =
+Object.entries(projectCount)
+.sort((a,b)=>b[1]-a[1]);
 
+const labels =
+sorted.map(x=>x[0]);
+
+const values =
+sorted.map(x=>x[1]);
 new Chart(
     document.getElementById('projectChart'),
     {
-        type: 'bar',
 
-        data: {
-            labels: labels,
+        type:'bar',
 
-            datasets: [{
-                label: 'Karyawan Aktif',
-                data: values,
-                borderWidth: 1
+        data:{
+
+            labels:labels,
+
+            datasets:[{
+
+                label:'Headcount Aktif',
+
+                data:values,
+
+                borderRadius:8,
+
+                borderWidth:1
+
             }]
+
         },
 
-        options: {
+        options:{
 
-            indexAxis: 'y',
+            responsive:true,
 
-            responsive: true,
+            maintainAspectRatio:false,
 
-            maintainAspectRatio: false,
+            plugins:{
 
-            plugins: {
+                legend:{
+                    display:false
+                },
 
-                legend: {
-                    display: false
+                tooltip:{
+                    enabled:true
                 }
 
             },
 
-            scales: {
+            scales:{
 
-                x: {
-                    beginAtZero: true
+                y:{
+                    beginAtZero:true
                 }
 
             }
 
-        }
+        },
+
+        plugins:[{
+
+            id:'valueLabel',
+
+            afterDatasetsDraw(chart){
+
+                const {ctx} = chart;
+
+                ctx.save();
+
+                chart
+                .getDatasetMeta(0)
+                .data
+                .forEach((bar,index)=>{
+
+                    const value =
+                    values[index];
+
+                    ctx.textAlign='center';
+                    ctx.font='bold 12px Segoe UI';
+
+                    ctx.fillText(
+                        value,
+                        bar.x,
+                        bar.y - 5
+                    );
+
+                });
+
+            }
+
+        }]
 
     }
 );
