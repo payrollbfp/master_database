@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Master BPJS</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+background:#f4f6f9;
+}
+
+.header{
+background:#1d2d5c;
+color:white;
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+
+.login-box{
+max-width:500px;
+margin:auto;
+margin-top:100px;
+}
+
+.login-box input{
+width:100%;
+height:45px;
+padding:10px;
+margin-top:10px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+height:40px;
+padding:0 15px;
+border:none;
+border-radius:8px;
+background:#1d2d5c;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#2d447f;
+}
+
+.toolbar{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:15px;
+}
+
+.toolbar input,
+.toolbar select{
+height:40px;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+.table-container{
+overflow:auto;
+max-height:650px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#1d2d5c;
+color:white;
+padding:10px;
+position:sticky;
+top:0;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
+.pagination{
+display:flex;
+justify-content:center;
+align-items:center;
+gap:15px;
+margin-top:15px;
+}
+
+.badge{
+padding:4px 10px;
+border-radius:20px;
+color:white;
+font-size:12px;
+}
+
+.aktif{
+background:#28a745;
+}
+
+.nonaktif{
+background:#dc3545;
+}
+
+#mainContent{
+display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="loginBox" class="login-box card">
+
+<h2>MASTER BPJS</h2>
+
+<br>
+
+<input
+type="password"
+id="password"
+placeholder="Masukkan Password">
+
+<button onclick="cekPassword()">
+Masuk
+</button>
+
+</div>
+
+<div id="mainContent">
+
+<div class="header">
+
+<div>
+
+<h2>MASTER BPJS</h2>
+<p>PT Bintang Fajar Persada</p>
+
+</div>
+
+<div>
+
+<button onclick="location.href='dashboard.html'">
+🏠 Home
+</button>
+
+</div>
+
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<div class="toolbar">
+
+<select id="projectFilter">
+
+<option value="">
+Pilih Project
+</option>
+
+</select>
+
+<button onclick="loadData()">
+Load Data
+</button>
+
+<input
+type="text"
+id="search"
+placeholder="Cari Nama / Nopeg">
+
+<button onclick="exportExcel()">
+Export Excel
+</button>
+
+</div>
+
+<b>
+Project :
+<span id="projectName">-</span>
+|
+Total Data :
+<span id="totalData">0</span>
+</b>
+
+<br><br>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Nopeg</th>
+<th>Nama</th>
+<th>Project</th>
+<th>No BPJS Kesehatan</th>
+<th>No BPJS TK</th>
+<th>Status BPJS</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tblData">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="pagination">
+
+<button onclick="prevPage()">
+◀ Prev
+</button>
+
+<span id="pageInfo">
+Page 1
+</span>
+
+<button onclick="nextPage()">
+Next ▶
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+'https://dvhjaxqpoqpeyamtlvgh.supabase.co';
+
+const SUPABASE_KEY =
+'PASTE_ANON_KEY_ANDA';
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let masterData=[];
+let filteredData=[];
+
+let currentPage=1;
+const rowsPerPage=100;
+
+/* PASSWORD */
+
+async function cekPassword(){
+
+const pass =
+document.getElementById('password').value;
+
+if(pass!=='bpjsbfp'){
+
+alert('Password Salah');
+return;
+
+}
+
+document.getElementById('loginBox').style.display='none';
+document.getElementById('mainContent').style.display='block';
+
+loadProject();
+
+}
+
+/* PROJECT */
+
+async function loadProject(){
+
+const {data,error}=await
+supabaseClient
+.from('bpjs_karyawan')
+.select('project');
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+const project =
+[...new Set(
+data.map(x=>x.project)
+)]
+.sort();
+
+const ddl =
+document.getElementById('projectFilter');
+
+ddl.innerHTML =
+'<option value="">Pilih Project</option>';
+
+project.forEach(p=>{
+
+ddl.innerHTML +=
+`<option value="${p}">${p}</option>`;
+
+});
+
+}
+
+/* LOAD DATA */
+
+async function loadData(){
+
+const project =
+document.getElementById(
+'projectFilter'
+).value;
+
+if(!project){
+
+alert('Pilih Project');
+return;
+
+}
+
+document.getElementById(
+'projectName'
+).innerHTML = project;
+
+let allData=[];
+
+let from=0;
+
+const batch=1000;
+
+while(true){
+
+const {data,error}=await
+supabaseClient
+.from('bpjs_karyawan')
+.select('*')
+.eq('project',project)
+.range(from,from+batch-1);
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+allData=[...allData,...data];
+
+if(data.length<batch)
+break;
+
+from+=batch;
+
+}
+
+masterData=allData;
+
+filteredData=[...masterData];
+
+currentPage=1;
+
+document.getElementById(
+'totalData'
+).innerHTML =
+filteredData.length;
+
+renderTable();
+
+}
+
+/* SEARCH */
+
+document.getElementById(
+'search'
+).addEventListener(
+'keyup',
+filterData
+);
+
+function filterData(){
+
+const keyword =
+document.getElementById(
+'search'
+).value.toLowerCase();
+
+filteredData=
+masterData.filter(row=>{
+
+return (
+(row.nama||'')
+.toLowerCase()
+.includes(keyword)
+
+||
+
+(row.nopeg||'')
+.toLowerCase()
+.includes(keyword)
+
+);
+
+});
+
+currentPage=1;
+
+document.getElementById(
+'totalData'
+).innerHTML =
+filteredData.length;
+
+renderTable();
+
+}
+
+/* TABLE */
+
+function renderTable(){
+
+const start=
+(currentPage-1)
+*rowsPerPage;
+
+const end=
+start+rowsPerPage;
+
+const pageData=
+filteredData.slice(
+start,
+end
+);
+
+let html='';
+
+pageData.forEach(row=>{
+
+const badge =
+(row.status_bpjs||'')
+.toUpperCase()
+.includes('AKTIF')
+
+?
+'<span class="badge aktif">Aktif</span>'
+
+:
+'<span class="badge nonaktif">Non Aktif</span>';
+
+html += `
+
+<tr>
+
+<td>${row.nopeg||''}</td>
+<td>${row.nama||''}</td>
+<td>${row.project||''}</td>
+<td>${row.no_bpjs_kesehatan||''}</td>
+<td>${row.no_bpjs_tk||''}</td>
+<td>${badge}</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById(
+'tblData'
+).innerHTML=html;
+
+const totalPages=
+Math.ceil(
+filteredData.length/
+rowsPerPage
+);
+
+document.getElementById(
+'pageInfo'
+).innerHTML=
+`Page ${currentPage} / ${totalPages}`;
+
+}
+
+/* PAGINATION */
+
+function nextPage(){
+
+const totalPages=
+Math.ceil(
+filteredData.length/
+rowsPerPage
+);
+
+if(currentPage<totalPages){
+
+currentPage++;
+renderTable();
+
+}
+
+}
+
+function prevPage(){
+
+if(currentPage>1){
+
+currentPage--;
+renderTable();
+
+}
+
+}
+
+/* EXCEL */
+
+function exportExcel(){
+
+if(filteredData.length===0){
+
+alert('Tidak ada data');
+
+return;
+
+}
+
+const ws =
+XLSX.utils.json_to_sheet(
+filteredData
+);
+
+const wb =
+XLSX.utils.book_new();
+
+XLSX.utils.book_append_sheet(
+wb,
+ws,
+'BPJS'
+);
+
+const project=
+document.getElementById(
+'projectName'
+).innerHTML;
+
+XLSX.writeFile(
+wb,
+`BPJS_${project}.xlsx`
+);
+
+}
+
+</script>
+
+</body>
+</html>
