@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Master Turn Over</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+background:#f4f6f9;
+}
+
+.header{
+background:#1d2d5c;
+color:white;
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+
+.login-box{
+max-width:500px;
+margin:auto;
+margin-top:100px;
+}
+
+.login-box input{
+width:100%;
+height:45px;
+padding:10px;
+margin-top:10px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+height:40px;
+padding:0 15px;
+border:none;
+border-radius:8px;
+background:#1d2d5c;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#2d447f;
+}
+
+.toolbar{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+.toolbar select,
+.toolbar input{
+height:40px;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+.kpi{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:15px;
+margin-bottom:20px;
+}
+
+.kpi-box{
+background:white;
+padding:20px;
+border-radius:15px;
+text-align:center;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.kpi-box h2{
+color:#1d2d5c;
+margin-top:10px;
+}
+
+.chart-box{
+height:450px;
+}
+
+.table-container{
+overflow:auto;
+max-height:600px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+font-size:13px;
+}
+
+th{
+background:#1d2d5c;
+color:white;
+padding:10px;
+position:sticky;
+top:0;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #eee;
+}
+
+.pagination{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:15px;
+}
+
+#mainContent{
+display:none;
+}
+
+@media(max-width:900px){
+
+.kpi{
+grid-template-columns:1fr 1fr;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="loginBox" class="login-box card">
+
+<h2>MASTER TURN OVER</h2>
+
+<br>
+
+<input
+type="password"
+id="password"
+placeholder="Masukkan Password">
+
+<button onclick="cekPassword()">
+Masuk
+</button>
+
+</div>
+
+<div id="mainContent">
+
+<div class="header">
+
+<div>
+
+<h2>MASTER TURN OVER</h2>
+
+<p>
+PT Bintang Fajar Persada
+</p>
+
+</div>
+
+<div>
+
+<button onclick="location.href='dashboard.html'">
+🏠 Home
+</button>
+
+</div>
+
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<div class="toolbar">
+
+<select id="projectFilter">
+
+<option value="ALL">
+Semua Project
+</option>
+
+</select>
+
+<select id="tahunFilter">
+
+<option value="">
+Pilih Tahun
+</option>
+
+</select>
+
+<button onclick="loadData()">
+Load Data
+</button>
+
+<button onclick="exportExcel()">
+Export Excel
+</button>
+
+</div>
+
+</div>
+
+<div class="kpi">
+
+<div class="kpi-box">
+
+<p>Aktif Saat Ini</p>
+
+<h2 id="kpiAktif">
+0
+</h2>
+
+</div>
+
+<div class="kpi-box">
+
+<p>Masuk Tahun Ini</p>
+
+<h2 id="kpiMasuk">
+0
+</h2>
+
+</div>
+
+<div class="kpi-box">
+
+<p>Keluar Tahun Ini</p>
+
+<h2 id="kpiKeluar">
+0
+</h2>
+
+</div>
+
+<div class="kpi-box">
+
+<p>Turn Over %</p>
+
+<h2 id="kpiTO">
+0%
+</h2>
+
+</div>
+
+</div>
+
+<div class="card chart-box">
+
+<h3>
+Headcount Bulanan
+</h3>
+
+<br>
+
+<canvas id="turnoverChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h3>
+Rekap Turn Over Bulanan
+</h3>
+
+<br>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Bulan</th>
+<th>Awal</th>
+<th>Masuk</th>
+<th>Keluar</th>
+<th>Akhir</th>
+<th>Turn Over %</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tblRekap">
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h3>
+Karyawan Aktif Bulanan
+</h3>
+
+<br>
+
+<div class="toolbar">
+
+<select id="bulanFilter">
+
+<option value="1">Januari</option>
+<option value="2">Februari</option>
+<option value="3">Maret</option>
+<option value="4">April</option>
+<option value="5">Mei</option>
+<option value="6">Juni</option>
+<option value="7">Juli</option>
+<option value="8">Agustus</option>
+<option value="9">September</option>
+<option value="10">Oktober</option>
+<option value="11">November</option>
+<option value="12">Desember</option>
+
+</select>
+
+<button onclick="loadKaryawanBulanan()">
+Tampilkan
+</button>
+
+</div>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Project</th>
+<th>Nopeg</th>
+<th>Nama</th>
+<th>Jabatan</th>
+<th>TMT</th>
+<th>Tanggal Resign</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tblAktif">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="pagination">
+
+<button onclick="prevPage()">
+◀ Prev
+</button>
+
+<span id="pageInfo">
+Page 1
+</span>
+
+<button onclick="nextPage()">
+Next ▶
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL =
+'https://dvhjaxqpoqpeyamtlvgh.supabase.co';
+
+const SUPABASE_KEY =
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aGpheHFwb3FwZXlhbXRsdmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzU1MjAsImV4cCI6MjA5MzcxMTUyMH0.qwX2LZ-9A1ZoLaqkRnZcDValUNKCYoqMvA_Vs79NkWY';
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let masterData = [];
+let aktifBulanan = [];
+
+let currentPage = 1;
+const rowsPerPage = 100;
+
+let turnoverChart = null;
+/* =====================================
+   LOGIN
+===================================== */
+
+async function cekPassword(){
+
+    const pass =
+    document.getElementById(
+        'password'
+    ).value;
+
+    if(
+        pass !==
+        'turnoverbfp'
+    ){
+
+        alert(
+            'Password Salah'
+        );
+
+        return;
+    }
+
+    document
+    .getElementById(
+        'loginBox'
+    )
+    .style.display='none';
+
+    document
+    .getElementById(
+        'mainContent'
+    )
+    .style.display='block';
+
+    await loadProject();
+    loadTahun();
+
+}
+
+/* =====================================
+   LOAD PROJECT
+===================================== */
+
+async function loadProject(){
+
+    const { data, error } =
+    await supabaseClient
+    .from('master_karyawan')
+    .select('project');
+
+    if(error){
+
+        alert(error.message);
+        return;
+
+    }
+
+    const projects =
+    [...new Set(
+        data
+        .map(x=>x.project)
+        .filter(Boolean)
+    )]
+    .sort();
+
+    const ddl =
+    document.getElementById(
+        'projectFilter'
+    );
+
+    ddl.innerHTML =
+    '<option value="ALL">Semua Project</option>';
+
+    projects.forEach(project=>{
+
+        ddl.innerHTML +=
+        `<option value="${project}">
+            ${project}
+        </option>`;
+
+    });
+
+}
+
+/* =====================================
+   LOAD TAHUN
+===================================== */
+
+function loadTahun(){
+
+    const ddl =
+    document.getElementById(
+        'tahunFilter'
+    );
+
+    const tahunNow =
+    new Date().getFullYear();
+
+    for(
+        let t = tahunNow;
+        t >= 2020;
+        t--
+    ){
+
+        ddl.innerHTML +=
+        `<option value="${t}">
+            ${t}
+        </option>`;
+
+    }
+
+}
+
+/* =====================================
+   LOAD DATA
+===================================== */
+
+async function loadData(){
+
+    const project =
+    document.getElementById(
+        'projectFilter'
+    ).value;
+
+    const tahun =
+    document.getElementById(
+        'tahunFilter'
+    ).value;
+
+    if(!tahun){
+
+        alert(
+            'Pilih Tahun'
+        );
+
+        return;
+    }
+
+    let query =
+    supabaseClient
+    .from('master_karyawan')
+    .select(`
+        project,
+        nopeg,
+        nama,
+        jabatan,
+        tmt,
+        tanggal_resign,
+        status_karyawan
+    `);
+
+    if(
+        project !== 'ALL'
+    ){
+
+        query =
+        query.eq(
+            'project',
+            project
+        );
+
+    }
+
+    const {
+        data,
+        error
+    } = await query;
+
+    if(error){
+
+        alert(
+            error.message
+        );
+
+        return;
+    }
+
+    masterData = data;
+
+    hitungTurnOver(
+        parseInt(tahun)
+    );
+
+}
+
+/* =====================================
+   HITUNG TURN OVER
+===================================== */
+
+function hitungTurnOver(tahun){
+
+    const bulanNama = [
+
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des'
+
+    ];
+
+    let chartData = [];
+
+    let html = '';
+
+    let totalMasuk = 0;
+    let totalKeluar = 0;
+
+    for(
+        let bulan=1;
+        bulan<=12;
+        bulan++
+    ){
+
+        const akhirBulan =
+        new Date(
+            tahun,
+            bulan,
+            0
+        );
+
+        const awalBulan =
+        new Date(
+            tahun,
+            bulan-1,
+            1
+        );
+
+        const akhirBulanLalu =
+        new Date(
+            tahun,
+            bulan-1,
+            0
+        );
+
+        let headcountAwal = 0;
+        let headcountAkhir = 0;
+        let masuk = 0;
+        let keluar = 0;
+
+        masterData.forEach(row=>{
+
+            const tmt =
+            row.tmt
+            ?
+            new Date(row.tmt)
+            :
+            null;
+
+            const resign =
+            row.tanggal_resign
+            ?
+            new Date(
+                row.tanggal_resign
+            )
+            :
+            null;
+
+            /* Awal Bulan */
+
+            if(
+                tmt &&
+                tmt <= akhirBulanLalu &&
+                (
+                    !resign ||
+                    resign > akhirBulanLalu
+                )
+            ){
+
+                headcountAwal++;
+
+            }
+
+            /* Akhir Bulan */
+
+            if(
+                tmt &&
+                tmt <= akhirBulan &&
+                (
+                    !resign ||
+                    resign > akhirBulan
+                )
+            ){
+
+                headcountAkhir++;
+
+            }
+
+            /* Masuk */
+
+            if(
+                tmt &&
+                tmt >= awalBulan &&
+                tmt <= akhirBulan
+            ){
+
+                masuk++;
+
+            }
+
+            /* Keluar */
+
+            if(
+                resign &&
+                resign >= awalBulan &&
+                resign <= akhirBulan
+            ){
+
+                keluar++;
+
+            }
+
+        });
+
+        totalMasuk += masuk;
+        totalKeluar += keluar;
+
+        const avg =
+        (
+            headcountAwal +
+            headcountAkhir
+        ) / 2;
+
+        const turnover =
+        avg > 0
+        ?
+        (
+            keluar /
+            avg *
+            100
+        )
+        .toFixed(2)
+        :
+        0;
+
+        html += `
+
+        <tr>
+
+        <td>
+        ${bulanNama[bulan-1]}
+        </td>
+
+        <td>
+        ${headcountAwal}
+        </td>
+
+        <td>
+        ${masuk}
+        </td>
+
+        <td>
+        ${keluar}
+        </td>
+
+        <td>
+        ${headcountAkhir}
+        </td>
+
+        <td>
+        ${turnover}%
+        </td>
+
+        </tr>
+
+        `;
+
+        chartData.push(
+            headcountAkhir
+        );
+
+    }
+
+    document
+    .getElementById(
+        'tblRekap'
+    )
+    .innerHTML = html;
+
+    document
+    .getElementById(
+        'kpiMasuk'
+    )
+    .innerHTML =
+    totalMasuk;
+
+    document
+    .getElementById(
+        'kpiKeluar'
+    )
+    .innerHTML =
+    totalKeluar;
+
+    const aktifSaatIni =
+    masterData.filter(row=>{
+
+        return (
+            row.status_karyawan &&
+            row.status_karyawan
+            .toUpperCase()
+            === 'AKTIF'
+        );
+
+    }).length;
+
+    document
+    .getElementById(
+        'kpiAktif'
+    )
+    .innerHTML =
+    aktifSaatIni;
+
+    const avgAktif =
+    chartData.reduce(
+        (a,b)=>a+b,
+        0
+    ) / 12;
+
+    const toRate =
+    avgAktif > 0
+    ?
+    (
+        totalKeluar /
+        avgAktif *
+        100
+    )
+    .toFixed(2)
+    :
+    0;
+
+    document
+    .getElementById(
+        'kpiTO'
+    )
+    .innerHTML =
+    toRate + '%';
+
+    renderChart(
+        chartData
+    );
+
+}
+  /* =====================================
+   CHART
+===================================== */
+
+function renderChart(chartData){
+
+    const bulan = [
+
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'Mei',
+        'Jun',
+        'Jul',
+        'Agu',
+        'Sep',
+        'Okt',
+        'Nov',
+        'Des'
+
+    ];
+
+    const ctx =
+    document.getElementById(
+        'turnoverChart'
+    );
+
+    if(turnoverChart){
+
+        turnoverChart.destroy();
+
+    }
+
+    turnoverChart =
+    new Chart(ctx,{
+
+        type:'line',
+
+        data:{
+
+            labels:bulan,
+
+            datasets:[{
+
+                label:
+                'Headcount Aktif',
+
+                data:chartData,
+
+                tension:0.3,
+
+                fill:false
+
+            }]
+
+        },
+
+        options:{
+
+            responsive:true,
+
+            maintainAspectRatio:false
+
+        }
+
+    });
+
+}
+
+/* =====================================
+   KARYAWAN AKTIF BULANAN
+===================================== */
+
+function loadKaryawanBulanan(){
+
+    const bulan =
+    parseInt(
+        document.getElementById(
+            'bulanFilter'
+        ).value
+    );
+
+    const tahun =
+    parseInt(
+        document.getElementById(
+            'tahunFilter'
+        ).value
+    );
+
+    if(!tahun){
+
+        alert(
+            'Pilih Tahun'
+        );
+
+        return;
+
+    }
+
+    const akhirBulan =
+    new Date(
+        tahun,
+        bulan,
+        0
+    );
+
+    aktifBulanan =
+    masterData.filter(row=>{
+
+        const tmt =
+        row.tmt
+        ?
+        new Date(row.tmt)
+        :
+        null;
+
+        const resign =
+        row.tanggal_resign
+        ?
+        new Date(
+            row.tanggal_resign
+        )
+        :
+        null;
+
+        return (
+
+            tmt &&
+            tmt <= akhirBulan
+
+            &&
+
+            (
+                !resign
+                ||
+                resign > akhirBulan
+            )
+
+        );
+
+    });
+
+    currentPage = 1;
+
+    renderAktif();
+
+}
+
+/* =====================================
+   RENDER KARYAWAN AKTIF
+===================================== */
+
+function renderAktif(){
+
+    const start =
+    (
+        currentPage - 1
+    )
+    *
+    rowsPerPage;
+
+    const end =
+    start +
+    rowsPerPage;
+
+    const pageData =
+    aktifBulanan.slice(
+        start,
+        end
+    );
+
+    let html = '';
+
+    pageData.forEach(row=>{
+
+        html += `
+
+        <tr>
+
+        <td>
+        ${row.project||''}
+        </td>
+
+        <td>
+        ${row.nopeg||''}
+        </td>
+
+        <td>
+        ${row.nama||''}
+        </td>
+
+        <td>
+        ${row.jabatan||''}
+        </td>
+
+        <td>
+        ${row.tmt||''}
+        </td>
+
+        <td>
+        ${row.tanggal_resign||''}
+        </td>
+
+        </tr>
+
+        `;
+
+    });
+
+    document
+    .getElementById(
+        'tblAktif'
+    )
+    .innerHTML =
+    html;
+
+    const totalPages =
+    Math.ceil(
+        aktifBulanan.length /
+        rowsPerPage
+    );
+
+    document
+    .getElementById(
+        'pageInfo'
+    )
+    .innerHTML =
+    `Page ${currentPage} / ${totalPages}`;
+
+}
+
+/* =====================================
+   PAGINATION
+===================================== */
+
+function nextPage(){
+
+    const totalPages =
+    Math.ceil(
+        aktifBulanan.length /
+        rowsPerPage
+    );
+
+    if(
+        currentPage <
+        totalPages
+    ){
+
+        currentPage++;
+
+        renderAktif();
+
+    }
+
+}
+
+function prevPage(){
+
+    if(
+        currentPage > 1
+    ){
+
+        currentPage--;
+
+        renderAktif();
+
+    }
+
+}
+
+/* =====================================
+   EXPORT EXCEL
+===================================== */
+
+function exportExcel(){
+
+    if(
+        masterData.length === 0
+    ){
+
+        alert(
+            'Tidak ada data'
+        );
+
+        return;
+
+    }
+
+    const wb =
+    XLSX.utils.book_new();
+
+    /* Sheet Rekap */
+
+    const rekapTable =
+    [];
+
+    document
+    .querySelectorAll(
+        '#tblRekap tr'
+    )
+    .forEach(tr=>{
+
+        const row=[];
+
+        tr
+        .querySelectorAll(
+            'td'
+        )
+        .forEach(td=>{
+
+            row.push(
+                td.innerText
+            );
+
+        });
+
+        if(row.length){
+
+            rekapTable.push(
+                row
+            );
+
+        }
+
+    });
+
+    const wsRekap =
+    XLSX.utils.aoa_to_sheet([
+
+        [
+            'Bulan',
+            'Awal',
+            'Masuk',
+            'Keluar',
+            'Akhir',
+            'Turn Over %'
+        ],
+
+        ...rekapTable
+
+    ]);
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        wsRekap,
+        'Rekap'
+    );
+
+    /* Sheet Aktif */
+
+    const wsAktif =
+    XLSX.utils.json_to_sheet(
+        aktifBulanan
+    );
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        wsAktif,
+        'Karyawan Aktif'
+    );
+
+    /* Save */
+
+    const project =
+    document
+    .getElementById(
+        'projectFilter'
+    )
+    .value;
+
+    const tahun =
+    document
+    .getElementById(
+        'tahunFilter'
+    )
+    .value;
+
+    XLSX.writeFile(
+
+        wb,
+
+        `TurnOver_${project}_${tahun}.xlsx`
+
+    );
+
+}
+
+/* =====================================
+   DEBUG
+===================================== */
+
+console.log(
+'Master Turn Over Loaded'
+);
+</script>
+
+</body>
+</html>
