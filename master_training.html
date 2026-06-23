@@ -435,7 +435,17 @@ filteredData=[...masterData];
 
 currentPage=1;
 
-updateKPI();
+masterData=data;
+filteredData=[...masterData];
+
+currentPage=1;
+
+document.getElementById(
+'totalData'
+).innerHTML =
+filteredData.length;
+
+renderTable();
 
 document.getElementById(
 'totalData'
