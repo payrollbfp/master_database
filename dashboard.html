@@ -296,25 +296,81 @@ PKWT Akan Berakhir
 <table>
 
 <thead>
+<div class="card">
 
-<tr>
+<h3>
+⚠️ Alert HR
+</h3>
 
-<th>Project</th>
-<th>Nopeg</th>
-<th>Nama</th>
-<th>Jabatan</th>
-<th>PKWT Kadaluarsa</th>
-<th>Sisa Hari</th>
+<br>
 
-</tr>
+<div class="summary">
 
-</thead>
+<div class="summary-box">
 
-<tbody id="tblPKWT">
+<h3>PKWT ≤ 30 Hari</h3>
 
-</tbody>
+<h1 id="pkwt30">
+0
+</h1>
 
-</table>
+<button
+onclick="location.href='master_pkwt.html'"
+style="margin-top:10px">
+Lihat Detail
+</button>
+
+</div>
+
+<div class="summary-box">
+
+<h3>PKWT ≤ 60 Hari</h3>
+
+<h1 id="pkwt60">
+0
+</h1>
+
+<button
+onclick="location.href='master_pkwt.html'"
+style="margin-top:10px">
+Lihat Detail
+</button>
+
+</div>
+
+<div class="summary-box">
+
+<h3>MCU ≤ 30 Hari</h3>
+
+<h1 id="mcu30">
+0
+</h1>
+
+<button
+onclick="location.href='master_mcu.html'"
+style="margin-top:10px">
+Lihat Detail
+</button>
+
+</div>
+
+<div class="summary-box">
+
+<h3>MCU ≤ 60 Hari</h3>
+
+<h1 id="mcu60">
+0
+</h1>
+
+<button
+onclick="location.href='master_mcu.html'"
+style="margin-top:10px">
+Lihat Detail
+</button>
+
+</div>
+
+</div>
 
 </div>
 
@@ -422,8 +478,12 @@ new Date();
 
 let aktif = 0;
 let resign = 0;
-let pkwt = 0;
-let mcu = 0;
+
+let pkwt30 = 0;
+let pkwt60 = 0;
+
+let mcu30 = 0;
+let mcu60 = 0;
 
 let projectCount = {};
 
@@ -469,9 +529,17 @@ Math.ceil(
 /(1000*60*60*24)
 );
 
-if(diff <= 60){
+if(diff >= 0 && diff <= 30){
 
-pkwt++;
+pkwt30++;
+
+}
+
+if(diff >= 0 && diff <= 60){
+
+pkwt60++;
+
+}
 
 let warna='green';
 
@@ -485,20 +553,6 @@ warna='orange';
 
 }
 
-html += `
-<tr>
-
-<td>${row.project||''}</td>
-<td>${row.nopeg||''}</td>
-<td>${row.nama||''}</td>
-<td>${row.jabatan||''}</td>
-<td>${row.pkwt_kadaluarsa}</td>
-<td class="${warna}">
-${diff} Hari
-</td>
-
-</tr>
-`;
 
 }
 
@@ -519,9 +573,15 @@ Math.ceil(
 /(1000*60*60*24)
 );
 
-if(diff <= 60){
+if(diff >=0 && diff <=30){
 
-mcu++;
+mcu30++;
+
+}
+
+if(diff >=0 && diff <=60){
+
+mcu60++;
 
 }
 
@@ -539,15 +599,28 @@ document
 
 document
 .getElementById('pkwt')
-.innerHTML = pkwt;
+.innerHTML = pkwt60;
 
 document
 .getElementById('mcu')
-.innerHTML = mcu;
+.innerHTML = mcu60;
 
 document
-.getElementById('tblPKWT')
-.innerHTML = html;
+.getElementById('pkwt30')
+.innerHTML = pkwt30;
+
+document
+.getElementById('pkwt60')
+.innerHTML = pkwt60;
+
+document
+.getElementById('mcu30')
+.innerHTML = mcu30;
+
+document
+.getElementById('mcu60')
+.innerHTML = mcu60;
+
 
 
 const sorted =
@@ -656,8 +729,7 @@ function logout(){
     'index.html';
 
 }
-</script>
-const username =
+    const username =
 localStorage.getItem(
     'username'
 );
@@ -668,5 +740,7 @@ if(!username){
     'index.html';
 
 }
+</script>
+
 </body>
 </html>
