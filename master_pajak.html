@@ -418,7 +418,7 @@ await supabaseClient
 .from('master_karyawan')
 .select(`
 project,
-nik,
+ktp,
 nama,
 alamat,
 npwp,
@@ -491,7 +491,7 @@ return (
 
 ||
 
-(row.nik || '')
+(row.ktp || '')
 .toLowerCase()
 .includes(keyword)
 
@@ -541,7 +541,7 @@ html += `
 <tr>
 
 <td>${row.project || ''}</td>
-<td>${row.nik || ''}</td>
+<td>${row.ktp || ''}</td>
 <td>${row.nama || ''}</td>
 <td>${row.alamat || ''}</td>
 <td>${row.npwp || ''}</td>
