@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>REPORT UMUM KARYAWAN</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:"Segoe UI",sans-serif;
+}
+
+body{
+background:#f4f6f9;
+}
+
+.header{
+background:#1d2d5c;
+color:white;
+padding:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:15px;
+box-shadow:0 2px 10px rgba(0,0,0,.08);
+margin-bottom:20px;
+}
+
+.login-box{
+max-width:450px;
+margin:auto;
+margin-top:100px;
+}
+
+.login-box input{
+width:100%;
+height:45px;
+padding:10px;
+margin-bottom:15px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+button{
+height:40px;
+padding:0 15px;
+border:none;
+border-radius:8px;
+background:#1d2d5c;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#2d447f;
+}
+
+.toolbar{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:15px;
+}
+
+.toolbar input,
+.toolbar select{
+height:40px;
+padding:10px;
+border:1px solid #ccc;
+border-radius:8px;
+}
+
+.table-container{
+overflow:auto;
+max-height:650px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#1d2d5c;
+color:white;
+padding:10px;
+position:sticky;
+top:0;
+white-space:nowrap;
+}
+
+td{
+padding:8px;
+border-bottom:1px solid #eee;
+white-space:nowrap;
+}
+
+.pagination{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:15px;
+}
+
+#mainContent{
+display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="loginBox" class="login-box card">
+
+<h2>REPORT UMUM KARYAWAN</h2>
+
+<br>
+
+<input
+type="text"
+id="username"
+placeholder="Username">
+
+<input
+type="password"
+id="password"
+placeholder="Password">
+
+<button onclick="loginUser()">
+Masuk
+</button>
+
+</div>
+
+<div id="mainContent">
+
+<div class="header">
+
+<div>
+
+<h2>REPORT UMUM KARYAWAN</h2>
+<p id="userProject">Project : -</p>
+
+</div>
+
+<div>
+
+<button onclick="location.href='dashboard.html'">
+🏠 Home
+</button>
+
+</div>
+
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<div class="toolbar">
+
+<select id="projectFilter">
+<option value="">
+Pilih Project
+</option>
+</select>
+
+<button onclick="loadData()">
+Load Data
+</button>
+
+<input
+type="text"
+id="search"
+placeholder="Cari Nama">
+
+<button onclick="exportExcel()">
+Export Excel
+</button>
+
+</div>
+
+<b>
+
+Total Data :
+<span id="totalData">0</span>
+
+</b>
+
+<br><br>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Project</th>
+<th>Nama</th>
+<th>Jabatan</th>
+<th>NIK</th>
+<th>Jenis Kelamin</th>
+<th>No HP</th>
+<th>Alamat KTP</th>
+<th>Status Karyawan</th>
+<th>TMT</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tblData">
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="pagination">
+
+<button onclick="prevPage()">
+◀ Prev
+</button>
+
+<span id="pageInfo">
+Page 1
+</span>
+
+<button onclick="nextPage()">
+Next ▶
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+<script>
+
+const SUPABASE_URL =
+'https://dvhjaxqpoqpeyamtlvgh.supabase.co';
+
+const SUPABASE_KEY =
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR2aGpheHFwb3FwZXlhbXRsdmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxMzU1MjAsImV4cCI6MjA5MzcxMTUyMH0.qwX2LZ-9A1ZoLaqkRnZcDValUNKCYoqMvA_Vs79NkWY';
+
+const supabaseClient =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+let masterData = [];
+let filteredData = [];
+
+let currentPage = 1;
+const rowsPerPage = 100;
+
+let loginProjects = [];
+
+/* ==========================
+   LOGIN USER
+========================== */
+
+async function loginUser(){
+
+const username =
+document
+.getElementById('username')
+.value
+.trim();
+
+const password =
+document
+.getElementById('password')
+.value
+.trim();
+
+if(!username || !password){
+
+alert(
+'Username dan Password wajib diisi'
+);
+
+return;
+
+}
+
+const {
+data,
+error
+}
+=
+await supabaseClient
+.from('users')
+.select('*')
+.eq('username',username)
+.eq('password',password);
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+if(!data || data.length===0){
+
+alert(
+'Username atau Password Salah'
+);
+
+return;
+
+}
+
+/* simpan login */
+
+localStorage.setItem(
+'report_username',
+username
+);
+
+loginProjects =
+data.map(
+x => x.project
+);
+
+document
+.getElementById(
+'loginBox'
+)
+.style.display =
+'none';
+
+document
+.getElementById(
+'mainContent'
+)
+.style.display =
+'block';
+
+loadProjectAccess();
+
+}
+
+/* ==========================
+   LOAD PROJECT AKSES
+========================== */
+
+function loadProjectAccess(){
+
+const ddl =
+document
+.getElementById(
+'projectFilter'
+);
+
+ddl.innerHTML='';
+
+loginProjects.forEach(project=>{
+
+ddl.innerHTML +=
+`
+<option value="${project}">
+${project}
+</option>
+`;
+
+});
+
+if(loginProjects.length===1){
+
+document
+.getElementById(
+'userProject'
+)
+.innerHTML =
+`Project : ${loginProjects[0]}`;
+
+loadData();
+
+}
+
+}
+
+/* ==========================
+   LOAD DATA
+========================== */
+
+async function loadData(){
+
+const project =
+document
+.getElementById(
+'projectFilter'
+)
+.value;
+
+if(!project){
+
+alert(
+'Pilih Project'
+);
+
+return;
+
+}
+
+document
+.getElementById(
+'userProject'
+)
+.innerHTML =
+`Project : ${project}`;
+
+const {
+data,
+error
+}
+=
+await supabaseClient
+.from('master_karyawan')
+.select(`
+project,
+nama,
+jabatan,
+ktp,
+jenis_kelamin,
+no_hp,
+alamat,
+status_karyawan,
+tmt
+`)
+.eq(
+'project',
+project
+);
+
+if(error){
+
+alert(
+error.message
+);
+
+return;
+
+}
+
+masterData =
+data;
+
+filteredData =
+[
+...masterData
+];
+
+currentPage = 1;
+
+document
+.getElementById(
+'totalData'
+)
+.innerHTML =
+filteredData.length;
+
+renderTable();
+
+}
+  document
+.getElementById('search')
+.addEventListener(
+'keyup',
+filterData
+);
+
+/* ==========================
+   FILTER DATA
+========================== */
+
+function filterData(){
+
+const keyword =
+document
+.getElementById('search')
+.value
+.toLowerCase();
+
+filteredData =
+masterData.filter(row=>{
+
+return (
+
+(row.nama || '')
+.toLowerCase()
+.includes(keyword)
+
+||
+
+(row.jabatan || '')
+.toLowerCase()
+.includes(keyword)
+
+);
+
+});
+
+currentPage = 1;
+
+document
+.getElementById(
+'totalData'
+)
+.innerHTML =
+filteredData.length;
+
+renderTable();
+
+}
+
+/* ==========================
+   RENDER TABLE
+========================== */
+
+function renderTable(){
+
+const start =
+(currentPage - 1)
+* rowsPerPage;
+
+const end =
+start +
+rowsPerPage;
+
+const pageData =
+filteredData.slice(
+start,
+end
+);
+
+let html='';
+
+pageData.forEach(row=>{
+
+html += `
+
+<tr>
+
+<td>${row.project || ''}</td>
+<td>${row.nama || ''}</td>
+<td>${row.jabatan || ''}</td>
+<td>${row.ktp || ''}</td>
+<td>${row.jenis_kelamin || ''}</td>
+<td>${row.no_hp || ''}</td>
+<td>${row.alamat_ktp || ''}</td>
+<td>${row.status_karyawan || ''}</td>
+<td>${row.tmt || ''}</td>
+
+</tr>
+
+`;
+
+});
+
+document
+.getElementById(
+'tblData'
+)
+.innerHTML =
+html;
+
+const totalPages =
+Math.ceil(
+filteredData.length /
+rowsPerPage
+);
+
+document
+.getElementById(
+'pageInfo'
+)
+.innerHTML =
+`Page ${currentPage} / ${totalPages}`;
+
+}
+
+/* ==========================
+   PAGINATION
+========================== */
+
+function nextPage(){
+
+const totalPages =
+Math.ceil(
+filteredData.length /
+rowsPerPage
+);
+
+if(
+currentPage <
+totalPages
+){
+
+currentPage++;
+
+renderTable();
+
+}
+
+}
+
+function prevPage(){
+
+if(
+currentPage > 1
+){
+
+currentPage--;
+
+renderTable();
+
+}
+
+}
+
+/* ==========================
+   EXPORT EXCEL
+========================== */
+
+function exportExcel(){
+
+if(
+filteredData.length===0
+){
+
+alert(
+'Tidak ada data'
+);
+
+return;
+
+}
+
+const exportData =
+filteredData.map(row=>({
+
+Project : row.project,
+Nama : row.nama,
+Jabatan : row.jabatan,
+NIK : row.ktp,
+Jenis_Kelamin : row.jenis_kelamin,
+No_HP : row.no_hp,
+Alamat_KTP : row.alamat_ktp,
+Status_Karyawan : row.status_karyawan,
+TMT : row.tmt
+
+}));
+
+const ws =
+XLSX.utils
+.json_to_sheet(
+exportData
+);
+
+const wb =
+XLSX.utils
+.book_new();
+
+XLSX.utils
+.book_append_sheet(
+wb,
+ws,
+'REPORT_UMUM'
+);
+
+const project =
+document
+.getElementById(
+'projectFilter'
+)
+.value;
+
+XLSX.writeFile(
+wb,
+`REPORT_UMUM_${project}.xlsx`
+);
+
+}
+
+</script>
+
+</body>
+</html>
