@@ -281,21 +281,6 @@ Headcount Aktif per Project
 
 <br>
 
-<canvas id="projectChart"></canvas>
-
-</div>
-
-<div class="card">
-
-<h3>
-PKWT Akan Berakhir
-</h3>
-
-<br>
-
-<table>
-
-<thead>
 <div class="card">
 
 <h3>
@@ -309,14 +294,9 @@ PKWT Akan Berakhir
 <div class="summary-box">
 
 <h3>PKWT ≤ 30 Hari</h3>
+<h1 id="pkwt30">0</h1>
 
-<h1 id="pkwt30">
-0
-</h1>
-
-<button
-onclick="location.href='master_pkwt.html'"
-style="margin-top:10px">
+<button onclick="location.href='master_pkwt.html'">
 Lihat Detail
 </button>
 
@@ -325,14 +305,9 @@ Lihat Detail
 <div class="summary-box">
 
 <h3>PKWT ≤ 60 Hari</h3>
+<h1 id="pkwt60">0</h1>
 
-<h1 id="pkwt60">
-0
-</h1>
-
-<button
-onclick="location.href='master_pkwt.html'"
-style="margin-top:10px">
+<button onclick="location.href='master_pkwt.html'">
 Lihat Detail
 </button>
 
@@ -341,14 +316,9 @@ Lihat Detail
 <div class="summary-box">
 
 <h3>MCU ≤ 30 Hari</h3>
+<h1 id="mcu30">0</h1>
 
-<h1 id="mcu30">
-0
-</h1>
-
-<button
-onclick="location.href='master_mcu.html'"
-style="margin-top:10px">
+<button onclick="location.href='master_mcu.html'">
 Lihat Detail
 </button>
 
@@ -357,14 +327,9 @@ Lihat Detail
 <div class="summary-box">
 
 <h3>MCU ≤ 60 Hari</h3>
+<h1 id="mcu60">0</h1>
 
-<h1 id="mcu60">
-0
-</h1>
-
-<button
-onclick="location.href='master_mcu.html'"
-style="margin-top:10px">
+<button onclick="location.href='master_mcu.html'">
 Lihat Detail
 </button>
 
@@ -373,11 +338,6 @@ Lihat Detail
 </div>
 
 </div>
-
-<div class="card">
-
-<h3>
-Menu Report
 </h3>
 
 <br>
@@ -487,7 +447,6 @@ let mcu60 = 0;
 
 let projectCount = {};
 
-let html = '';
 
 data.forEach(row=>{
 
@@ -507,7 +466,7 @@ projectCount[row.project]=0;
 projectCount[row.project]++;
 
 }
-
+    
 if(row.tanggal_resign){
 
 resign++;
@@ -538,26 +497,9 @@ pkwt30++;
 if(diff >= 0 && diff <= 60){
 
 pkwt60++;
-
-}
-
-let warna='green';
-
-if(diff<=30){
-
-warna='red';
-
-}else if(diff<=60){
-
-warna='orange';
-
-}
-
-
 }
 
 }
-
 if(
     row.status_karyawan &&
     row.status_karyawan.trim().toUpperCase() === 'AKTIF' &&
