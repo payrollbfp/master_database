@@ -170,9 +170,6 @@ font-weight:bold;
 color:green;
 font-weight:bold;
 }
-
-@media(max-width:900px){
-
 .alert-grid{
 
 display:grid;
@@ -253,6 +250,10 @@ cursor:pointer;
 background:#2d447f;
 
 }
+    
+@media(max-width:900px){
+
+
 
 .menu{
 grid-template-columns:1fr 1fr;
@@ -308,7 +309,7 @@ Logout
 
 <div class="summary">
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>Karyawan Aktif</h3>
 
@@ -318,7 +319,7 @@ Logout
 
 </div>
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>PKWT ≤ 60 Hari</h3>
 
@@ -328,7 +329,7 @@ Logout
 
 </div>
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>MCU ≤ 60 Hari</h3>
 
@@ -338,7 +339,7 @@ Logout
 
 </div>
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>Resign</h3>
 
@@ -372,24 +373,9 @@ Headcount Aktif per Project
 
 <div class="alert-grid">
 
-<div class="alert-box">
+<div class="summary-box">
 
-<div class="alert-box">
-
-<h3>PKWT Kadaluarsa</h3>
-
-<h1 id="pkwtExpired">0</h1>
-
-<p class="alert-project"
-id="pkwtExpiredProject">-</p>
-
-<button onclick="location.href='master_pkwt.html'">
-Lihat Detail
-</button>
-
-</div>
-
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>PKWT ≤ 30 Hari</h3>
 
@@ -404,7 +390,7 @@ Lihat Detail
 
 </div>
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>MCU Kadaluarsa</h3>
 
@@ -419,7 +405,7 @@ Lihat Detail
 
 </div>
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>MCU ≤ 30 Hari</h3>
 
@@ -435,7 +421,7 @@ Lihat Detail
 </div>
 </div>
 
-<div class="alert-box">
+<div class="summary-box">
 
 <h3>MCU ≤ 60 Hari</h3>
 <h1 id="mcu60">0</h1>
