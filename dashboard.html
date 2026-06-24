@@ -303,8 +303,13 @@ Headcount Aktif per Project
 
 <div class="summary-box">
 
-<h3>PKWT ≤ 30 Hari</h3>
-<h1 id="pkwt30">0</h1>
+<div class="summary-box">
+
+<h3>PKWT Kadaluarsa</h3>
+
+<h1 id="pkwtExpired">0</h1>
+
+<p id="pkwtExpiredProject">-</p>
 
 <button onclick="location.href='master_pkwt.html'">
 Lihat Detail
@@ -314,10 +319,27 @@ Lihat Detail
 
 <div class="summary-box">
 
-<h3>PKWT ≤ 60 Hari</h3>
-<h1 id="pkwt60">0</h1>
+<h3>PKWT ≤ 30 Hari</h3>
+
+<h1 id="pkwt30">0</h1>
+
+<p id="pkwtProject">-</p>
 
 <button onclick="location.href='master_pkwt.html'">
+Lihat Detail
+</button>
+
+</div>
+
+<div class="summary-box">
+
+<h3>MCU Kadaluarsa</h3>
+
+<h1 id="mcuExpired">0</h1>
+
+<p id="mcuExpiredProject">-</p>
+
+<button onclick="location.href='master_mcu.html'">
 Lihat Detail
 </button>
 
@@ -326,12 +348,16 @@ Lihat Detail
 <div class="summary-box">
 
 <h3>MCU ≤ 30 Hari</h3>
+
 <h1 id="mcu30">0</h1>
+
+<p id="mcuProject">-</p>
 
 <button onclick="location.href='master_mcu.html'">
 Lihat Detail
 </button>
 
+</div>
 </div>
 
 <div class="summary-box">
@@ -454,10 +480,16 @@ let aktif = 0;
 let resign = 0;
 
 let pkwt30 = 0;
-let pkwt60 = 0;
+let pkwtExpired = 0;
 
 let mcu30 = 0;
-let mcu60 = 0;
+let mcuExpired = 0;
+
+let pkwtProject = new Set();
+let pkwtExpiredProject = new Set();
+
+let mcuProject = new Set();
+let mcuExpiredProject = new Set();
 
 let projectCount = {};
 
@@ -502,15 +534,24 @@ Math.ceil(
 /(1000*60*60*24)
 );
 
-if(diff >= 0 && diff <= 30){
+if(diff < 0){
 
-pkwt30++;
+    pkwtExpired++;
+
+    pkwtExpiredProject.add(
+        row.project
+    );
 
 }
 
-if(diff >= 0 && diff <= 60){
+if(diff >= 0 && diff <= 30){
 
-pkwt60++;
+    pkwt30++;
+
+    pkwtProject.add(
+        row.project
+    );
+
 }
 
 }
@@ -529,15 +570,23 @@ Math.ceil(
 /(1000*60*60*24)
 );
 
-if(diff >=0 && diff <=30){
+if(diff < 0){
 
-mcu30++;
+    mcuExpired++;
+
+    mcuExpiredProject.add(
+        row.project
+    );
 
 }
 
-if(diff >=0 && diff <=60){
+if(diff >=0 && diff <=30){
 
-mcu60++;
+    mcu30++;
+
+    mcuProject.add(
+        row.project
+    );
 
 }
 
@@ -555,27 +604,47 @@ document
 
 document
 .getElementById('pkwt')
-.innerHTML = pkwt60;
+.innerHTML = pkwt30;
 
 document
 .getElementById('mcu')
-.innerHTML = mcu60;
+.innerHTML = mcu30;
 
 document
 .getElementById('pkwt30')
 .innerHTML = pkwt30;
 
 document
-.getElementById('pkwt60')
-.innerHTML = pkwt60;
-
-document
 .getElementById('mcu30')
 .innerHTML = mcu30;
 
 document
-.getElementById('mcu60')
-.innerHTML = mcu60;
+.getElementById('pkwtExpired')
+.innerHTML = pkwtExpired;
+
+document
+.getElementById('mcuExpired')
+.innerHTML = mcuExpired;
+
+document
+.getElementById('pkwtProject')
+.innerHTML =
+[...pkwtProject].slice(0,3).join(', ');
+
+document
+.getElementById('pkwtExpiredProject')
+.innerHTML =
+[...pkwtExpiredProject].slice(0,3).join(', ');
+
+document
+.getElementById('mcuProject')
+.innerHTML =
+[...mcuProject].slice(0,3).join(', ');
+
+document
+.getElementById('mcuExpiredProject')
+.innerHTML =
+[...mcuExpiredProject].slice(0,3).join(', ');
 
 
 
